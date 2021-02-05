@@ -1,4 +1,4 @@
-package com.desafio.model.dto;
+package com.desafio.service.dto;
 
 import lombok.Data;
 

@@ -1,7 +1,6 @@
 package com.desafio.controller;
 
-import com.desafio.model.User;
-import com.desafio.model.dto.UserDTO;
+import com.desafio.domain.User;
 import com.desafio.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

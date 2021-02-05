@@ -1,6 +1,6 @@
 package com.desafio.repository;
 
-import com.desafio.model.User;
+import com.desafio.domain.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.util.List;
