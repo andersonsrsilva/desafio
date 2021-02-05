@@ -1,7 +1,7 @@
 package com.desafio.controller;
 
-import com.desafio.domain.User;
 import com.desafio.service.UserService;
+import com.desafio.service.dto.UserDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,7 +20,7 @@ public class UserController {
 
     @GetMapping
     @ResponseStatus( HttpStatus.OK )
-    public List<User> findAll() {
+    public List<UserDTO> findAll() {
         return userService.findAll();
     }
 
