@@ -4,13 +4,13 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import java.util.List;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
 @Entity
-@Table(name = "user")
-public class User {
+@Table (name = "project")
+public class Project {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -18,8 +18,5 @@ public class User {
 
     @Column(name = "name", nullable = false, length = 120)
     private String name;
-
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "user")
-    public List<TimeSheet> timeSheets;
 
 }

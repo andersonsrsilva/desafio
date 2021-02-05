@@ -15,8 +15,8 @@ public class TimeSheetController {
 
     @GetMapping("/{id}")
     @ResponseStatus( HttpStatus.CREATED )
-    public ResponseEntity<?> mark(@PathVariable Long id) {
-        timeSheetsService.mark(id);
+    public ResponseEntity<?> record(@PathVariable Long id) {
+        timeSheetsService.record(id);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
