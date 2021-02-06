@@ -22,6 +22,4 @@ public class User {
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "user")
     public List<TimeSheet> timeSheets;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "user")
-    public List<ProjectUser> projects;
 }

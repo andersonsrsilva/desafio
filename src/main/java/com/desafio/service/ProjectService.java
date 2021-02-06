@@ -30,16 +30,12 @@ public class ProjectService {
     private ProjectUserRepository projectUserRepository;
 
     public List<ProjectDTO> myProjects(Long idUser) {
-        Optional<User> userOptional = userRepository.findById(idUser);
+        List<ProjectUser> projects = projectUserRepository.findProjectsByIdUser(idUser);
 
-        if(userOptional.isPresent()) {
+        List<ProjectDTO> list = projects.stream().map(
+                p -> new ProjectDTO(p.getId(), p.getProject().getName())
+        ).collect(Collectors.toList());
 
-        }
-
-        User user = userOptional.get();
-
-        //List<ProjectDTO> listDTO = MapperUtils.mapAll(list, UserDTO.class);
-
-        return new ArrayList<>();
+        return list;
     }
 }
