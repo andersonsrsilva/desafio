@@ -19,7 +19,7 @@ public class User {
     @Column(name = "name", nullable = false, length = 120)
     private String name;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "user")
-    public List<TimeSheet> timeSheets;
+//    @OneToMany(cascade = CascadeType.ALL, mappedBy = "user")
+//    public List<TimeSheet> timeSheets;
 
 }

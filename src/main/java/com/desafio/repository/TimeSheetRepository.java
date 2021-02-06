@@ -13,7 +13,7 @@ public interface TimeSheetRepository extends JpaRepository<TimeSheet, Long> {
 
     List<TimeSheet> findByUserId(Long id);
 
-    @Query("SELECT t FROM TimeSheet t WHERE t.record > ?1 and t.record < ?2 ORDER BY t.record")
-    List<TimeSheet> findRecordPerDay(LocalDateTime from, LocalDateTime to);
+    @Query("SELECT t FROM TimeSheet t INNER JOIN t.user u WHERE t.record > ?1 and t.record < ?2 AND u.id = ?3 ORDER BY t.record")
+    List<TimeSheet> findRecordDay(LocalDateTime from, LocalDateTime to, Long idUser);
 
 }

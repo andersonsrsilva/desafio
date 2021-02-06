@@ -1,15 +1,26 @@
 package com.desafio.service.dto;
 
+import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import javax.validation.constraints.Positive;
+import java.time.LocalDate;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProjectHourDTO {
 
-    private Long projectUserId;
-    private Integer hour ;
+    private Long projectId;
+
+    private Long userId;
+
+    @ApiModelProperty(example = "yyyy-MM-dd")
+    private LocalDate date;
+
+    @Positive(message = "hour required")
+    private Integer hour;
 
 }

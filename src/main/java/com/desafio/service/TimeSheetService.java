@@ -7,6 +7,7 @@ import com.desafio.exception.ValidationException;
 import com.desafio.repository.TimeSheetRepository;
 import com.desafio.repository.UserRepository;
 import com.desafio.util.DateUtil;
+import com.desafio.enums.Number;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -35,14 +36,12 @@ public class TimeSheetService {
             throw new ResourceNotFoundException("User not found.");
         }
 
-        List<TimeSheet> list = timeSheetRepository.findRecordPerDay(DateUtil.initialDate(), DateUtil.finalDate());
+        List<TimeSheet> timeSheetList = timeSheetRepository.findRecordDay(DateUtil.initialDate(), DateUtil.finalDate(), idUser);
 
-        if (list.isEmpty() || list.size() == 1 || list.size() == 3) {
+        if (timeSheetList.isEmpty() || timeSheetList.size() == Number.ONE.getValue() || timeSheetList.size() == Number.TREE.getValue()) {
             addRecord(userOptional.get());
-        } else if (list.size() == 2) {
-            Optional<TimeSheet> lastElement = list.stream().reduce((first, second) -> second);
-
-            if(DateUtil.diffMinutes(lastElement.get().getRecord()) < 60) {
+        } else if (timeSheetList.size() == Number.TWO.getValue()) {
+            if(isMinOneHour(timeSheetList)) {
                 throw new ValidationException("Not allowed register. One hour to the lunch.");
             }
 
@@ -59,6 +58,11 @@ public class TimeSheetService {
                 .build();
 
         timeSheetRepository.save(timeSheet);
+    }
+
+    private boolean isMinOneHour(List<TimeSheet> list) {
+        Optional<TimeSheet> lastElement = list.stream().reduce((first, second) -> second);
+        return DateUtil.diffMinutes(lastElement.get().getRecord()) < Number.SIXTY.getValue();
     }
 
     private boolean isWeekend() {

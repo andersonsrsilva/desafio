@@ -14,7 +14,7 @@ public class TimeSheetController {
     private TimeSheetService timeSheetsService;
 
     @GetMapping("/{idUser}/register")
-    @ResponseStatus( HttpStatus.CREATED )
+    @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<?> register(@PathVariable Long idUser) {
         timeSheetsService.register(idUser);
         return new ResponseEntity<>(HttpStatus.CREATED);
