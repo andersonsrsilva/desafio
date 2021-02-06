@@ -1,15 +1,13 @@
 package com.desafio.service;
 
+import com.desafio.domain.ProjectHour;
 import com.desafio.domain.ProjectUser;
 import com.desafio.domain.TimeSheet;
 import com.desafio.domain.User;
 import com.desafio.enums.Number;
 import com.desafio.exception.ResourceNotFoundException;
 import com.desafio.exception.ValidationException;
-import com.desafio.repository.ProjectRepository;
-import com.desafio.repository.ProjectUserRepository;
-import com.desafio.repository.TimeSheetRepository;
-import com.desafio.repository.UserRepository;
+import com.desafio.repository.*;
 import com.desafio.service.dto.ProjectDTO;
 import com.desafio.service.dto.ProjectHourDTO;
 import com.desafio.util.DateUtil;
@@ -28,7 +26,7 @@ public class ProjectService {
     private UserRepository userRepository;
 
     @Autowired
-    private ProjectRepository projectRepository;
+    private ProjectHourRepository projectHourRepository;
 
     @Autowired
     private TimeSheetRepository timeSheetRepository;
@@ -54,6 +52,13 @@ public class ProjectService {
 
     public void registerHours(ProjectHourDTO dto) {
         validation(dto);
+
+        ProjectUser projectUser = projectUserRepository.findByProjectUser(dto.getProjectId(), dto.getUserId());
+        ProjectHour projectHour = new ProjectHour();
+        projectHour.setHours(dto.getHour());
+        projectHour.setDate(dto.getDate());
+        projectHour.setProjectUser(projectUser);
+        projectHourRepository.save(projectHour);
     }
 
     private void validation(ProjectHourDTO dto) {
@@ -90,7 +95,12 @@ public class ProjectService {
             totalHour += DateUtil.diffMinutes(timeSheet3.getRecord(), timeSheet4.getRecord());
         }
 
-        if((dto.getHour() * Number.SIXTY.getValue()) > totalHour) {
+        ProjectUser projectUser = projectUserRepository.findByProjectUser(dto.getProjectId(), dto.getUserId());
+        int registeHours = projectHourRepository.findRegisteHours(projectUser, dto.getDate());
+
+        int total = (dto.getHour() + registeHours) * Number.SIXTY.getValue();
+
+        if(total > totalHour) {
             throw new ValidationException("Insufficient hours worked");
         }
     }
