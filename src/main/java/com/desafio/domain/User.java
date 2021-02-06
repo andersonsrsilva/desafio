@@ -13,7 +13,7 @@ import java.util.List;
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name = "name", nullable = false, length = 120)
@@ -22,4 +22,6 @@ public class User {
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "user")
     public List<TimeSheet> timeSheets;
 
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "user")
+    public List<ProjectUser> projects;
 }

@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,23 +24,32 @@ public class TimeSheetService {
     @Autowired
     private TimeSheetRepository timeSheetRepository;
 
-    public void record(Long id) {
+    public void register(Long idUser) {
         if (isWeekend()) {
-            throw new ValidationException("Not allowed on weekends");
+            throw new ValidationException("Not allowed on weekends.");
         }
 
-        Optional<User> userOptional = userRepository.findById(id);
+        Optional<User> userOptional = userRepository.findById(idUser);
 
         if (!userOptional.isPresent()) {
-            throw new ResourceNotFoundException("User not found");
+            throw new ResourceNotFoundException("User not found.");
         }
 
         List<TimeSheet> list = timeSheetRepository.findRecordPerDay(DateUtil.initialDate(), DateUtil.finalDate());
 
-        if (list.isEmpty()) {
+        if (list.isEmpty() || list.size() == 1 || list.size() == 3) {
             addRecord(userOptional.get());
-        }
+        } else if (list.size() == 2) {
+            Optional<TimeSheet> lastElement = list.stream().reduce((first, second) -> second);
 
+            if(DateUtil.diffMinutes(lastElement.get().getRecord()) < 60) {
+                throw new ValidationException("Not allowed register. One hour to the lunch.");
+            }
+
+            addRecord(userOptional.get());
+        }else {
+            throw new ValidationException("Not allowed register. Timesheet completed");
+        }
     }
 
     private void addRecord(User user) {

@@ -20,6 +20,5 @@ public class UserService {
         List<UserDTO> listDTO = MapperUtils.mapAll(list, UserDTO.class);
 
         return listDTO;
-
     }
 }
