@@ -9,17 +9,19 @@ import com.desafio.repository.ProjectHourRepository;
 import com.desafio.repository.ProjectUserRepository;
 import com.desafio.repository.TimeSheetRepository;
 import com.desafio.repository.UserRepository;
+import com.desafio.service.dto.ReportDTO;
 import com.desafio.service.dto.TimeSheetOutDTO;
 import com.desafio.util.DateUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import static java.time.temporal.TemporalAdjusters.*;
 
 import javax.validation.Valid;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 @Service
@@ -214,6 +216,83 @@ public class TimeSheetService {
                 p -> new TimeSheetOutDTO(p.getId(), DateUtil.dateToString(p.getRecord()))).collect(Collectors.toList());
 
         return list;
+    }
+
+    public String reportByIdMouth(Long idUser, Integer year, Integer mouth) {
+        Optional<User> userOptional = userRepository.findById(idUser);
+
+        if (!userOptional.isPresent()) {
+            throw new ResourceNotFoundException("User not found.");
+        }
+
+        LocalDateTime from = LocalDateTime.of(LocalDate.of(year, mouth, 1), LocalTime.of(0,0));
+        LocalDateTime to = LocalDateTime.of(from.toLocalDate().with(lastDayOfMonth()), LocalTime.of(23,59));
+
+        List<TimeSheet> timeSheetList = timeSheetRepository.reportByIdMouth(from, to, userOptional.get());
+
+        List<ReportDTO> reportDTOList = new ArrayList<>();
+        LocalDate lastDate = null;
+        ReportDTO report = new ReportDTO();
+
+        for(TimeSheet timeSheet: timeSheetList) {
+            if (lastDate == null) {
+                report.setDate(timeSheet.getRecord().toLocalDate());
+                report.getDateTimes().add(timeSheet.getRecord());
+                reportDTOList.add(report);
+                lastDate = timeSheet.getRecord().toLocalDate();
+            } else {
+                if (lastDate.equals(timeSheet.getRecord().toLocalDate())) {
+                    report.getDateTimes().add(timeSheet.getRecord());
+                } else {
+                    report = new ReportDTO();
+                    report.setDate(timeSheet.getRecord().toLocalDate());
+                    report.getDateTimes().add(timeSheet.getRecord());
+                    reportDTOList.add(report);
+                    lastDate = timeSheet.getRecord().toLocalDate();
+                }
+            }
+        }
+
+        int totalRecordedHour = 0;
+
+        for(ReportDTO dto: reportDTOList) {
+            try {
+                LocalDateTime inMorning = dto.getDateTimes().get(0);
+                LocalDateTime outMorning = dto.getDateTimes().get(1);
+                totalRecordedHour += DateUtil.diffMinutes(inMorning, outMorning);
+
+                LocalDateTime inAfternoon = dto.getDateTimes().get(2);
+                LocalDateTime outAfternoon = dto.getDateTimes().get(3);
+                totalRecordedHour += DateUtil.diffMinutes(inAfternoon, outAfternoon);
+            } catch (IndexOutOfBoundsException e) {
+                throw new ResourceNotFoundException("Timesheet incompleted.");
+            }
+        }
+
+        int total = Number.TOTAL_MONTH.getValue() * 60;
+        int diff = totalRecordedHour - total;
+
+        if(totalRecordedHour >= total) {
+            return "Worked more: " + getTimeConverted(diff);
+        }else {
+            return "Worked less: " + getTimeConverted(diff * -1);
+        }
+    }
+
+    private String getTimeConverted(int value) {
+        int minutes = value % 60;
+        int hours = (value - minutes) / 60;
+
+        String strHours = hours == 0 ? "hour" : "hours";
+        String strMinutes = minutes == 0 ? "minute" : "minutes";
+
+        StringBuilder srt = new StringBuilder();
+        srt.append(hours);
+        srt.append(strHours);
+        srt.append(" ");
+        srt.append(minutes);
+        srt.append(strMinutes);
+        return srt.toString();
     }
 
 }

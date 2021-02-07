@@ -6,7 +6,8 @@ public enum Number {
     TWO(2),
     TREE(3),
     FOUR(4),
-    SIXTY(60);
+    SIXTY(60),
+    TOTAL_MONTH(168);
 
     private int value;
 

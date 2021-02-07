@@ -54,4 +54,13 @@ public class TimeSheetController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    @GetMapping("/{idUser}/{year}/{mouth}")
+    @ApiOperation(value = "Report")
+    public ResponseEntity<?> reportByIdMouth(@ApiParam(value = "ID User", example = "") @PathVariable Long idUser,
+                                             @ApiParam(value = "Year", example = "") @PathVariable Integer year,
+                                             @ApiParam(value = "Mouth (1 to january)", example = "") @PathVariable Integer mouth) {
+        String msn = timeSheetsService.reportByIdMouth(idUser, year, mouth);
+        return new ResponseEntity<>(msn, HttpStatus.OK);
+    }
+
 }
