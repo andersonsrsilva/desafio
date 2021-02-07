@@ -6,6 +6,8 @@ import com.desafio.exception.ResourceNotFoundException;
 import com.desafio.exception.ValidationException;
 import com.desafio.repository.TimeSheetRepository;
 import com.desafio.repository.UserRepository;
+import com.desafio.service.dto.ProjectDTO;
+import com.desafio.service.dto.TimeSheetDTO;
 import com.desafio.util.DateUtil;
 import com.desafio.enums.Number;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,8 +15,11 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class TimeSheetService {
@@ -36,7 +41,7 @@ public class TimeSheetService {
             throw new ResourceNotFoundException("User not found.");
         }
 
-        List<TimeSheet> timeSheetList = timeSheetRepository.findRecordDay(DateUtil.initialDate(), DateUtil.finalDate(), idUser);
+        List<TimeSheet> timeSheetList = timeSheetRepository.findRecordDayByUser(DateUtil.initialDate(), DateUtil.finalDate(), userOptional.get());
 
         if (timeSheetList.isEmpty() || timeSheetList.size() == Number.ONE.getValue() || timeSheetList.size() == Number.TREE.getValue()) {
             addRecord(userOptional.get());
@@ -73,6 +78,33 @@ public class TimeSheetService {
             default:
                 return false;
         }
+    }
+
+    public void edit(Long id, TimeSheetDTO dto) {
+        Optional<TimeSheet> timeSheetOptional = timeSheetRepository.findById(id);
+
+        if (!timeSheetOptional.isPresent()) {
+            throw new ResourceNotFoundException("User not found.");
+        }
+
+    }
+
+    public List<TimeSheetDTO> getByTime(Long idUser, LocalDate date) {
+        Optional<User> userOptional = userRepository.findById(idUser);
+
+        if (!userOptional.isPresent()) {
+            throw new ResourceNotFoundException("User not found.");
+        }
+
+        LocalDateTime initialDate = DateUtil.initialDate(date);
+        LocalDateTime finalDate = DateUtil.finalDate(date);
+
+        List<TimeSheet> timeSheetList = timeSheetRepository.findRecordDayByUser(initialDate, finalDate, userOptional.get());
+
+        List<TimeSheetDTO> list = timeSheetList.stream().map(
+                p -> new TimeSheetDTO(p.getId(), p.getUser().getId(), p.getRecord())).collect(Collectors.toList());
+
+        return list;
     }
 
 }

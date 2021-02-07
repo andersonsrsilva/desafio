@@ -71,7 +71,7 @@ public class ProjectService {
         LocalDateTime initialDate = DateUtil.initialDate(dto.getDate());
         LocalDateTime finalDate = DateUtil.finalDate(dto.getDate());
 
-        List<TimeSheet> timeSheetList = timeSheetRepository.findRecordDay(initialDate, finalDate, dto.getUserId());
+        List<TimeSheet> timeSheetList = timeSheetRepository.findRecordDayByUser(initialDate, finalDate, userOptional.get());
 
         if(timeSheetList.isEmpty()) {
             throw new ValidationException("You do not have worked this day");
@@ -96,9 +96,9 @@ public class ProjectService {
         }
 
         ProjectUser projectUser = projectUserRepository.findByProjectUser(dto.getProjectId(), dto.getUserId());
-        int registeHours = projectHourRepository.findRegisteHours(projectUser, dto.getDate());
+        int registerHours = projectHourRepository.findRegisterHours(projectUser, dto.getDate());
 
-        int total = (dto.getHour() + registeHours) * Number.SIXTY.getValue();
+        int total = (dto.getHour() + registerHours) * Number.SIXTY.getValue();
 
         if(total > totalHour) {
             throw new ValidationException("Insufficient hours worked");

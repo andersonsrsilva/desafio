@@ -20,7 +20,7 @@ public class ProjectHourDTO {
     @ApiModelProperty(example = "yyyy-MM-dd")
     private LocalDate date;
 
-    @Positive(message = "hour required")
+    @Positive(message = "hour invalid")
     private Integer hour;
 
 }

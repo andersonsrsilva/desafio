@@ -22,15 +22,13 @@ public class ProjectController {
     private ProjectService projectService;
 
     @GetMapping("/{idUser}/my-projects")
-    @ResponseStatus(HttpStatus.CREATED)
-    @ApiOperation(value = "List my project")
+    @ApiOperation(value = "List my projects")
     public ResponseEntity<?> myProjects(@PathVariable Long idUser) {
         List<ProjectDTO> list = projectService.myProjects(idUser);
         return new ResponseEntity<>(list, HttpStatus.OK);
     }
 
     @PostMapping("/register-hours")
-    @ResponseStatus(HttpStatus.CREATED)
     @ApiOperation(value = "Register hour in a project")
     public ResponseEntity<?> registerHours(@Valid @RequestBody ProjectHourDTO dto) {
         projectService.registerHours(dto);
