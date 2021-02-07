@@ -18,7 +18,7 @@ public class ProjectHourDTO {
     private Long userId;
 
     @ApiModelProperty(example = "yyyy-MM-dd")
-    private LocalDate date;
+    private LocalDate recordDate;
 
     @Positive(message = "hour invalid")
     private Integer hour;

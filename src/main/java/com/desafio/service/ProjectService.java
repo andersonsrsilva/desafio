@@ -26,10 +26,10 @@ public class ProjectService {
     private UserRepository userRepository;
 
     @Autowired
-    private ProjectHourRepository projectHourRepository;
+    private TimeSheetRepository timeSheetRepository;
 
     @Autowired
-    private TimeSheetRepository timeSheetRepository;
+    private ProjectHourRepository projectHourRepository;
 
     @Autowired
     private ProjectUserRepository projectUserRepository;
@@ -56,7 +56,7 @@ public class ProjectService {
         ProjectUser projectUser = projectUserRepository.findByProjectUser(dto.getProjectId(), dto.getUserId());
         ProjectHour projectHour = new ProjectHour();
         projectHour.setHours(dto.getHour());
-        projectHour.setDate(dto.getDate());
+        projectHour.setRecordDate(dto.getRecordDate());
         projectHour.setProjectUser(projectUser);
         projectHourRepository.save(projectHour);
     }
@@ -68,8 +68,8 @@ public class ProjectService {
             throw new ResourceNotFoundException("User not found.");
         }
 
-        LocalDateTime initialDate = DateUtil.initialDate(dto.getDate());
-        LocalDateTime finalDate = DateUtil.finalDate(dto.getDate());
+        LocalDateTime initialDate = DateUtil.initialDate(dto.getRecordDate());
+        LocalDateTime finalDate = DateUtil.finalDate(dto.getRecordDate());
 
         List<TimeSheet> timeSheetList = timeSheetRepository.findRecordDayByUser(initialDate, finalDate, userOptional.get());
 
@@ -96,10 +96,11 @@ public class ProjectService {
         }
 
         ProjectUser projectUser = projectUserRepository.findByProjectUser(dto.getProjectId(), dto.getUserId());
-        int registerHours = projectHourRepository.findRegisterHours(projectUser, dto.getDate());
+        int registerHours = projectHourRepository.findRegisterHours(projectUser, dto.getRecordDate());
 
         int total = (dto.getHour() + registerHours) * Number.SIXTY.getValue();
 
+        //revisar
         if(total > totalHour) {
             throw new ValidationException("Insufficient hours worked");
         }

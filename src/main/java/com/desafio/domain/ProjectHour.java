@@ -23,7 +23,7 @@ public class ProjectHour {
     @Column(name = "hours", nullable = false)
     private Integer hours;
 
-    @Column(name = "date", nullable = false, columnDefinition = "DATE")
-    private LocalDate date;
+    @Column(name = "record_date", nullable = false, columnDefinition = "DATE")
+    private LocalDate recordDate;
 
 }

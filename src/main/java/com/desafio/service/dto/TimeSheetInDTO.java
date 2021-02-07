@@ -5,17 +5,16 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class TimeSheetDTO {
+public class TimeSheetInDTO {
 
     private Long id;
-    private Long user;
 
-    @ApiModelProperty(example = "yyyy-MM-dd HH:mm")
-    private LocalDateTime record;
+    @ApiModelProperty(example = "HH:mm")
+    private LocalTime record;
 
 }

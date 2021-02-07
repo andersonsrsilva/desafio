@@ -46,4 +46,8 @@ public class DateUtil {
         }
     }
 
+    public static String dateToString(LocalDateTime data) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        return data.format(formatter);
+    }
 }
