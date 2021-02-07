@@ -13,9 +13,9 @@ import java.time.LocalDate;
 public interface ProjectHourRepository extends JpaRepository<ProjectHour, Long> {
 
     @Query("SELECT sum(ph.hours) FROM ProjectHour ph WHERE ph.projectUser = ?1 AND ph.recordDate = ?2")
-    int findRegisterHours(ProjectUser idprojectUser, LocalDate date);
+    Integer findRegisterHours(ProjectUser idprojectUser, LocalDate date);
 
     @Query("SELECT sum(ph.hours) FROM ProjectHour ph INNER JOIN ph.projectUser pu WHERE pu.user = ?1 AND ph.recordDate = ?2")
-    int findRegisterHoursByDate(User user, LocalDate date);
+    Integer findRegisterHoursByDate(User user, LocalDate date);
 
 }

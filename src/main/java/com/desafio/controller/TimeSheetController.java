@@ -1,6 +1,8 @@
 package com.desafio.controller;
 
 import com.desafio.service.TimeSheetService;
+import com.desafio.service.dto.ProjectHourDTO;
+import com.desafio.service.dto.TimeSheeRegisterDTO;
 import com.desafio.service.dto.TimeSheetInDTO;
 import com.desafio.service.dto.TimeSheetOutDTO;
 import io.swagger.annotations.Api;
@@ -18,17 +20,17 @@ import java.time.LocalTime;
 import java.util.List;
 
 @RestController
-@Api(value = "Timesheet Controller")
+@Api(tags = "Timesheet Controller")
 @RequestMapping("/api/timesheets")
 public class TimeSheetController {
 
     @Autowired
     private TimeSheetService timeSheetsService;
 
-    @GetMapping("/{idUser}/register")
+    @PostMapping()
     @ApiOperation(value = "Register my timesheet")
-    public ResponseEntity<?> register(@PathVariable Long idUser) {
-        timeSheetsService.register(idUser);
+    public ResponseEntity<?> register(@RequestBody TimeSheeRegisterDTO dto) {
+        timeSheetsService.register(dto);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 

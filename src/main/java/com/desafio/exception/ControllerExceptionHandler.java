@@ -1,5 +1,6 @@
 package com.desafio.exception;
 
+import io.swagger.annotations.Api;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -9,6 +10,7 @@ import org.springframework.web.context.request.WebRequest;
 import java.time.LocalDateTime;
 
 @ControllerAdvice
+@Api(tags = "Exception Controller")
 public class ControllerExceptionHandler {
 
     @ExceptionHandler(ResourceNotFoundException.class)

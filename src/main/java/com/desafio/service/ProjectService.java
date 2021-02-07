@@ -1,16 +1,15 @@
 package com.desafio.service;
 
-import com.desafio.domain.ProjectHour;
-import com.desafio.domain.ProjectUser;
-import com.desafio.domain.TimeSheet;
-import com.desafio.domain.User;
+import com.desafio.domain.*;
 import com.desafio.enums.Number;
 import com.desafio.exception.ResourceNotFoundException;
 import com.desafio.exception.ValidationException;
 import com.desafio.repository.*;
 import com.desafio.service.dto.ProjectDTO;
 import com.desafio.service.dto.ProjectHourDTO;
+import com.desafio.service.dto.ProjectInDTO;
 import com.desafio.util.DateUtil;
+import com.desafio.util.MapperUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +23,9 @@ public class ProjectService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private ProjectRepository projectRepository;
 
     @Autowired
     private TimeSheetRepository timeSheetRepository;
@@ -92,13 +94,22 @@ public class ProjectService {
         totalRecordedHour += DateUtil.diffMinutes(timeSheet3.getRecord(), timeSheet4.getRecord());
 
         ProjectUser projectUser = projectUserRepository.findByProjectUser(dto.getProjectId(), dto.getUserId());
-        int registerHours = projectHourRepository.findRegisterHours(projectUser, dto.getRecordDate());
+        Integer registerHours = projectHourRepository.findRegisterHours(projectUser, dto.getRecordDate());
+
+        if(registerHours == null) {
+            registerHours = 0;
+        }
 
         int launchedHourMinutes = (dto.getHour() + registerHours) * Number.SIXTY.getValue();
 
         if(launchedHourMinutes > totalRecordedHour) {
             throw new ValidationException("Insufficient hours worked");
         }
+    }
+
+    public void create(ProjectInDTO dto) {
+        Project project = MapperUtils.map(dto, Project.class);
+        projectRepository.save(project);
     }
 
 }

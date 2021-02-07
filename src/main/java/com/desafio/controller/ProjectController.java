@@ -3,6 +3,8 @@ package com.desafio.controller;
 import com.desafio.service.ProjectService;
 import com.desafio.service.dto.ProjectDTO;
 import com.desafio.service.dto.ProjectHourDTO;
+import com.desafio.service.dto.ProjectInDTO;
+import com.desafio.service.dto.UserInDTO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +16,7 @@ import javax.validation.Valid;
 import java.util.List;
 
 @RestController
-@Api(value = "Project Controller")
+@Api(tags = "Project Controller")
 @RequestMapping("/api/projects")
 public class ProjectController {
 
@@ -32,6 +34,13 @@ public class ProjectController {
     @ApiOperation(value = "Register hour in a project")
     public ResponseEntity<?> registerHours(@Valid @RequestBody ProjectHourDTO dto) {
         projectService.registerHours(dto);
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
+    @PostMapping()
+    @ApiOperation(value = "Register a new project")
+    public ResponseEntity<?> create(@RequestBody ProjectInDTO dto) {
+        projectService.create(dto);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 

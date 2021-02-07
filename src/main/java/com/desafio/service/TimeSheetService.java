@@ -10,6 +10,7 @@ import com.desafio.repository.ProjectUserRepository;
 import com.desafio.repository.TimeSheetRepository;
 import com.desafio.repository.UserRepository;
 import com.desafio.service.dto.ReportDTO;
+import com.desafio.service.dto.TimeSheeRegisterDTO;
 import com.desafio.service.dto.TimeSheetOutDTO;
 import com.desafio.util.DateUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,12 +40,12 @@ public class TimeSheetService {
     @Autowired
     private ProjectUserRepository projectUserRepository;
 
-    public void register(Long idUser) {
+    public void register(TimeSheeRegisterDTO dto) {
         if (isWeekend()) {
             throw new ValidationException("Not allowed on weekends.");
         }
 
-        Optional<User> userOptional = userRepository.findById(idUser);
+        Optional<User> userOptional = userRepository.findById(dto.getId());
 
         if (!userOptional.isPresent()) {
             throw new ResourceNotFoundException("User not found.");
@@ -98,7 +99,7 @@ public class TimeSheetService {
         LocalDateTime newDate = LocalDateTime.of(timeSheet.getRecord().toLocalDate(), hour);
         timeSheet.setRecord(newDate);
 
-        //timeSheetRepository.save(timeSheet);
+        timeSheetRepository.save(timeSheet);
     }
 
     private void validationEdit(Long id, Long idUser, LocalTime hour) {
