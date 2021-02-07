@@ -81,27 +81,22 @@ public class ProjectService {
             throw new ValidationException("Please, adjust your time sheet");
         }
 
-        int totalHour = 0;
+        int totalRecordedHour = 0;
 
         TimeSheet timeSheet1 = timeSheetList.get(0);
         TimeSheet timeSheet2 = timeSheetList.get(1);
+        totalRecordedHour += DateUtil.diffMinutes(timeSheet1.getRecord(), timeSheet2.getRecord());
 
-        totalHour += DateUtil.diffMinutes(timeSheet1.getRecord(), timeSheet2.getRecord());
-
-        if(timeSheetList.size() == Number.FOUR.getValue()) {
-            TimeSheet timeSheet3 = timeSheetList.get(2);
-            TimeSheet timeSheet4 = timeSheetList.get(3);
-
-            totalHour += DateUtil.diffMinutes(timeSheet3.getRecord(), timeSheet4.getRecord());
-        }
+        TimeSheet timeSheet3 = timeSheetList.get(2);
+        TimeSheet timeSheet4 = timeSheetList.get(3);
+        totalRecordedHour += DateUtil.diffMinutes(timeSheet3.getRecord(), timeSheet4.getRecord());
 
         ProjectUser projectUser = projectUserRepository.findByProjectUser(dto.getProjectId(), dto.getUserId());
         int registerHours = projectHourRepository.findRegisterHours(projectUser, dto.getRecordDate());
 
-        int total = (dto.getHour() + registerHours) * Number.SIXTY.getValue();
+        int launchedHourMinutes = (dto.getHour() + registerHours) * Number.SIXTY.getValue();
 
-        //revisar
-        if(total > totalHour) {
+        if(launchedHourMinutes > totalRecordedHour) {
             throw new ValidationException("Insufficient hours worked");
         }
     }

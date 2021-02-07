@@ -50,4 +50,8 @@ public class DateUtil {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
         return data.format(formatter);
     }
+
+    public static LocalDateTime changeTime(LocalDateTime localDateTime, LocalTime localTime) {
+        return LocalDateTime.of(localDateTime.toLocalDate(), localTime);
+    }
 }

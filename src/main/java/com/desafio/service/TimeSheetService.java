@@ -1,6 +1,5 @@
 package com.desafio.service;
 
-import com.desafio.domain.ProjectUser;
 import com.desafio.domain.TimeSheet;
 import com.desafio.domain.User;
 import com.desafio.enums.Number;
@@ -10,7 +9,6 @@ import com.desafio.repository.ProjectHourRepository;
 import com.desafio.repository.ProjectUserRepository;
 import com.desafio.repository.TimeSheetRepository;
 import com.desafio.repository.UserRepository;
-import com.desafio.service.dto.TimeSheetInDTO;
 import com.desafio.service.dto.TimeSheetOutDTO;
 import com.desafio.util.DateUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,12 +53,12 @@ public class TimeSheetService {
         if (timeSheetList.isEmpty() || timeSheetList.size() == Number.ONE.getValue() || timeSheetList.size() == Number.TREE.getValue()) {
             addRecord(userOptional.get());
         } else if (timeSheetList.size() == Number.TWO.getValue()) {
-            if(isMinOneHour(timeSheetList)) {
+            if (isMinOneHour(timeSheetList)) {
                 throw new ValidationException("Not allowed register. One hour to the lunch.");
             }
 
             addRecord(userOptional.get());
-        }else {
+        } else {
             throw new ValidationException("Not allowed register. Timesheet completed");
         }
     }
@@ -92,7 +90,13 @@ public class TimeSheetService {
     public void edit(@Valid Long id, Long idUser, LocalTime hour) {
         validationEdit(id, idUser, hour);
 
+        Optional<TimeSheet> timeSheetOptional = timeSheetRepository.findById(id);
+        TimeSheet timeSheet = timeSheetOptional.get();
 
+        LocalDateTime newDate = LocalDateTime.of(timeSheet.getRecord().toLocalDate(), hour);
+        timeSheet.setRecord(newDate);
+
+        //timeSheetRepository.save(timeSheet);
     }
 
     private void validationEdit(Long id, Long idUser, LocalTime hour) {
@@ -104,38 +108,94 @@ public class TimeSheetService {
 
         Optional<TimeSheet> timeSheetOptional = timeSheetRepository.findById(id);
 
-        if(!timeSheetOptional.get().getUser().equals(userOptional.get())){
+        User user = userOptional.get();
+        TimeSheet timeSheet = timeSheetOptional.get();
+
+        if (!timeSheet.getUser().equals(user)) {
             throw new ResourceNotFoundException("User not found for this timesheet.");
         }
 
-        int total = projectHourRepository.findRegisterHoursByDate(userOptional.get(), timeSheetOptional.get().getRecord().toLocalDate());
+        if (hour.isBefore(timeSheet.getRecord().toLocalTime())) {
+            return;
+        }
 
-        if(total > 0) {
-            LocalDateTime initialDate = DateUtil.initialDate(timeSheetOptional.get().getRecord().toLocalDate());
-            LocalDateTime finalDate = DateUtil.finalDate(timeSheetOptional.get().getRecord().toLocalDate());
+        int launchedHour = projectHourRepository.findRegisterHoursByDate(user, timeSheet.getRecord().toLocalDate());
 
-            List<TimeSheet> timeSheetList = timeSheetRepository.findRecordDayByUser(initialDate, finalDate, userOptional.get());
+        LocalDateTime initialDate = DateUtil.initialDate(timeSheet.getRecord().toLocalDate());
+        LocalDateTime finalDate = DateUtil.finalDate(timeSheet.getRecord().toLocalDate());
+        List<TimeSheet> timeSheetList = timeSheetRepository.findRecordDayByUser(initialDate, finalDate, user);
 
-            int totalHour = 0;
+        validLauncherHours(id, hour, launchedHour, timeSheetList);
+        validIn(id, hour, timeSheetList);
+        validLunchTime(timeSheetList);
+    }
 
-            TimeSheet timeSheet1 = timeSheetList.get(0);
-            TimeSheet timeSheet2 = timeSheetList.get(1);
+    private void validLunchTime(List<TimeSheet> timeSheetList) {
+        TimeSheet outMorning = timeSheetList.get(1);
+        TimeSheet inAfternoon = timeSheetList.get(2);
 
-            totalHour += DateUtil.diffMinutes(timeSheet1.getRecord(), timeSheet2.getRecord());
+        int lunchTime = DateUtil.diffMinutes(outMorning.getRecord(), inAfternoon.getRecord());
+
+        if(lunchTime < 60) {
+            throw new ResourceNotFoundException("Min one hour to the lunch.");
+        }
+    }
+
+    private void validIn(Long id, LocalTime hour, List<TimeSheet> timeSheetList) {
+        TimeSheet editabled = null;
+        boolean flag = false;
+
+        for (TimeSheet t : timeSheetList) {
+            if (t.getId().equals(id)) {
+                t.setRecord(DateUtil.changeTime(t.getRecord(), hour));
+                editabled = t;
+                flag = true;
+            }
+            if (flag) {
+                if(editabled.getRecord().isAfter(t.getRecord())) {
+                    throw new ResourceNotFoundException("In after out.");
+                }
+                break;
+            }
+        }
+    }
+
+    private void validLauncherHours(Long id, LocalTime hour, int launchedHour, List<TimeSheet> timeSheetList) {
+        if (timeSheetList.isEmpty()) {
+            throw new ValidationException("You do not have worked this day");
+        }
+
+        if (timeSheetList.size() == Number.ONE.getValue() || timeSheetList.size() == Number.TREE.getValue()) {
+            throw new ValidationException("Please, adjust your time sheet");
+        }
+
+        timeSheetList.forEach(t -> {
+            if (t.getId().equals(id)) {
+                t.setRecord(DateUtil.changeTime(t.getRecord(), hour));
+            }
+        });
+
+        if (launchedHour > 0) {
+            int totalRecordedHour = 0;
+
+            TimeSheet inMorning = timeSheetList.get(0);
+            TimeSheet outMorning = timeSheetList.get(1);
+
+            totalRecordedHour += DateUtil.diffMinutes(inMorning.getRecord(), outMorning.getRecord());
 
             if (timeSheetList.size() == Number.FOUR.getValue()) {
-                TimeSheet timeSheet3 = timeSheetList.get(2);
-                TimeSheet timeSheet4 = timeSheetList.get(3);
+                TimeSheet inAfternoon = timeSheetList.get(2);
+                TimeSheet outAfternoon = timeSheetList.get(3);
 
-                totalHour += DateUtil.diffMinutes(timeSheet3.getRecord(), timeSheet4.getRecord());
+                totalRecordedHour += DateUtil.diffMinutes(inAfternoon.getRecord(), outAfternoon.getRecord());
             }
 
-            //REVISAR
-            if ((total * Number.SIXTY.getValue()) > totalHour) {
+            int launchedHourMinutes = launchedHour * Number.SIXTY.getValue();
+
+            if ((totalRecordedHour - launchedHourMinutes) < 0) {
                 throw new ValidationException("Longer time worked");
             }
         }
-
     }
 
     public List<TimeSheetOutDTO> getByTime(Long idUser, LocalDate date) {
