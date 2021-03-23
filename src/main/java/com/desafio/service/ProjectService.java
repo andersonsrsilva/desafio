@@ -37,11 +37,7 @@ public class ProjectService {
     private ProjectUserRepository projectUserRepository;
 
     public List<ProjectDTO> myProjects(Long idUser) {
-        Optional<User> userOptional = userRepository.findById(idUser);
-
-        if (!userOptional.isPresent()) {
-            throw new ResourceNotFoundException("User not found.");
-        }
+        userRepository.findById(idUser).orElseThrow(() -> new ResourceNotFoundException("User not found."));
 
         List<ProjectUser> projects = projectUserRepository.findProjectsByIdUser(idUser);
 
@@ -64,16 +60,12 @@ public class ProjectService {
     }
 
     private void validation(ProjectHourDTO dto) {
-        Optional<User> userOptional = userRepository.findById(dto.getUserId());
-
-        if (!userOptional.isPresent()) {
-            throw new ResourceNotFoundException("User not found.");
-        }
+        User user = userRepository.findById(dto.getUserId()).orElseThrow(() -> new ResourceNotFoundException("User not found."));
 
         LocalDateTime initialDate = DateUtil.initialDate(dto.getRecordDate());
         LocalDateTime finalDate = DateUtil.finalDate(dto.getRecordDate());
 
-        List<TimeSheet> timeSheetList = timeSheetRepository.findRecordDayByUser(initialDate, finalDate, userOptional.get());
+        List<TimeSheet> timeSheetList = timeSheetRepository.findRecordDayByUser(initialDate, finalDate, user);
 
         if(timeSheetList.isEmpty()) {
             throw new ValidationException("You do not have worked this day");

@@ -42,11 +42,7 @@ public class ProjectUserService {
     }
 
     public void binding(ProjectUserNewInDTO dto) {
-        Optional<User> userOptional = userRepository.findById(dto.getIdUser());
-
-        if (!userOptional.isPresent()) {
-            throw new ResourceNotFoundException("User not found.");
-        }
+        User user = userRepository.findById(dto.getIdUser()).orElseThrow(() -> new ResourceNotFoundException("User not found."));
 
         Optional<Project> optionalProject = projectRepository.findById(dto.getIdProject());
 
@@ -56,7 +52,7 @@ public class ProjectUserService {
 
         ProjectUser projectUser = new ProjectUser();
         projectUser.setProject(optionalProject.get());
-        projectUser.setUser(userOptional.get());
+        projectUser.setUser(user);
         projectUserRepository.save(projectUser);
     }
 }

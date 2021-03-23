@@ -15,15 +15,17 @@ import com.desafio.service.dto.TimeSheetOutDTO;
 import com.desafio.util.DateUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import static java.time.temporal.TemporalAdjusters.*;
 
 import javax.validation.Valid;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static java.time.temporal.TemporalAdjusters.lastDayOfMonth;
 
 @Service
 public class TimeSheetService {
@@ -45,22 +47,18 @@ public class TimeSheetService {
             throw new ValidationException("Not allowed on weekends.");
         }
 
-        Optional<User> userOptional = userRepository.findById(dto.getId());
+        User user = userRepository.findById(dto.getId()).orElseThrow(() -> new ResourceNotFoundException("User not found."));
 
-        if (!userOptional.isPresent()) {
-            throw new ResourceNotFoundException("User not found.");
-        }
-
-        List<TimeSheet> timeSheetList = timeSheetRepository.findRecordDayByUser(DateUtil.initialDate(), DateUtil.finalDate(), userOptional.get());
+        List<TimeSheet> timeSheetList = timeSheetRepository.findRecordDayByUser(DateUtil.initialDate(), DateUtil.finalDate(), user);
 
         if (timeSheetList.isEmpty() || timeSheetList.size() == Number.ONE.getValue() || timeSheetList.size() == Number.TREE.getValue()) {
-            addRecord(userOptional.get());
+            addRecord(user);
         } else if (timeSheetList.size() == Number.TWO.getValue()) {
             if (isMinOneHour(timeSheetList)) {
                 throw new ValidationException("Not allowed register. One hour to the lunch.");
             }
 
-            addRecord(userOptional.get());
+            addRecord(user);
         } else {
             throw new ValidationException("Not allowed register. Timesheet completed");
         }
@@ -103,15 +101,10 @@ public class TimeSheetService {
     }
 
     private void validationEdit(Long id, Long idUser, LocalTime hour) {
-        Optional<User> userOptional = userRepository.findById(idUser);
-
-        if (!userOptional.isPresent()) {
-            throw new ResourceNotFoundException("User not found.");
-        }
+        User user = userRepository.findById(idUser).orElseThrow(() -> new ResourceNotFoundException("User not found."));
 
         Optional<TimeSheet> timeSheetOptional = timeSheetRepository.findById(id);
 
-        User user = userOptional.get();
         TimeSheet timeSheet = timeSheetOptional.get();
 
         if (!timeSheet.getUser().equals(user)) {
@@ -202,16 +195,12 @@ public class TimeSheetService {
     }
 
     public List<TimeSheetOutDTO> getByTime(Long idUser, LocalDate date) {
-        Optional<User> userOptional = userRepository.findById(idUser);
-
-        if (!userOptional.isPresent()) {
-            throw new ResourceNotFoundException("User not found.");
-        }
+        User user = userRepository.findById(idUser).orElseThrow(() -> new ResourceNotFoundException("User not found."));
 
         LocalDateTime initialDate = DateUtil.initialDate(date);
         LocalDateTime finalDate = DateUtil.finalDate(date);
 
-        List<TimeSheet> timeSheetList = timeSheetRepository.findRecordDayByUser(initialDate, finalDate, userOptional.get());
+        List<TimeSheet> timeSheetList = timeSheetRepository.findRecordDayByUser(initialDate, finalDate, user);
 
         List<TimeSheetOutDTO> list = timeSheetList.stream().map(
                 p -> new TimeSheetOutDTO(p.getId(), DateUtil.dateToString(p.getRecord()))).collect(Collectors.toList());
@@ -220,16 +209,12 @@ public class TimeSheetService {
     }
 
     public String reportByIdMouth(Long idUser, Integer year, Integer mouth) {
-        Optional<User> userOptional = userRepository.findById(idUser);
-
-        if (!userOptional.isPresent()) {
-            throw new ResourceNotFoundException("User not found.");
-        }
+        User user = userRepository.findById(idUser).orElseThrow(() -> new ResourceNotFoundException("User not found."));
 
         LocalDateTime from = LocalDateTime.of(LocalDate.of(year, mouth, 1), LocalTime.of(0,0));
         LocalDateTime to = LocalDateTime.of(from.toLocalDate().with(lastDayOfMonth()), LocalTime.of(23,59));
 
-        List<TimeSheet> timeSheetList = timeSheetRepository.reportByIdMouth(from, to, userOptional.get());
+        List<TimeSheet> timeSheetList = timeSheetRepository.reportByIdMouth(from, to, user);
 
         List<ReportDTO> reportDTOList = new ArrayList<>();
         LocalDate lastDate = null;
